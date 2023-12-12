@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/JakubBizewski/jakubme_links/shortLinks/application"
-	"github.com/JakubBizewski/jakubme_links/shortLinks/infrastructure"
-	"github.com/JakubBizewski/jakubme_links/web"
+	"github.com/JakubBizewski/jakubme_links/adapters/shortLinksDb"
+	"github.com/JakubBizewski/jakubme_links/adapters/web"
+	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
 )
 
 func main() {
-	domainRepository := infrastructure.NewMemoryDomainRepository()
-	shortenedLinksService := application.NewShortenedLinksService(domainRepository)
+	shortLinkRepository := shortLinksDb.NewMemoryShortLinkRepository()
+	shortenedLinksService := driver.NewShortLinkService(shortLinkRepository)
 
 	webApp := web.NewWebApp(shortenedLinksService)
 
