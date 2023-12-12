@@ -9,6 +9,6 @@ import (
 var ErrShortCodeAlreadyExists = errors.New("Short code already exists")
 
 type ShortLinkRepository interface {
-	Store(shortLink *model.ShortLink) error
-	FindByShortCode(shortCode string) (*model.ShortLink, error)
+	Store(shortLink model.ShortLink) error
+	FindByShortCode(shortCode string) (model.ShortLink, error)
 }

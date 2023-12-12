@@ -26,7 +26,7 @@ func (s *ShortLinkService) GenerateShortLink(targetUrl string) (string, error) {
 	for i := 0; i < shortCodeGenerationMaxAttempts; i++ {
 		shortLink := model.CreateRandomShortLink(targetUrl, defaultShortCodeLen)
 
-		err := s.shortLinkRepository.Store(&shortLink)
+		err := s.shortLinkRepository.Store(shortLink)
 		if err == nil {
 			return shortLink.ShortCode, nil
 		}
@@ -43,10 +43,6 @@ func (s *ShortLinkService) GetTargetUrl(shortCode string) (string, error) {
 	shortLink, err := s.shortLinkRepository.FindByShortCode(shortCode)
 	if err != nil {
 		return "", err
-	}
-
-	if shortLink == nil {
-		return "", nil
 	}
 
 	return shortLink.TargetUrl, nil

@@ -8,18 +8,18 @@ import (
 )
 
 type MemoryShortLinkRepository struct {
-	shortLinks map[string]*model.ShortLink
+	shortLinks map[string]model.ShortLink
 	mutex      sync.Mutex
 }
 
 func CreateMemoryShortLinkRepository() *MemoryShortLinkRepository {
 	return &MemoryShortLinkRepository{
-		shortLinks: make(map[string]*model.ShortLink),
+		shortLinks: make(map[string]model.ShortLink),
 		mutex:      sync.Mutex{},
 	}
 }
 
-func (r *MemoryShortLinkRepository) Store(shortLink *model.ShortLink) error {
+func (r *MemoryShortLinkRepository) Store(shortLink model.ShortLink) error {
 	r.mutex.Lock()
 	if _, exists := r.shortLinks[shortLink.ShortCode]; exists {
 		r.mutex.Unlock()
@@ -32,10 +32,10 @@ func (r *MemoryShortLinkRepository) Store(shortLink *model.ShortLink) error {
 	return nil
 }
 
-func (r *MemoryShortLinkRepository) FindByShortCode(shortCode string) (*model.ShortLink, error) {
+func (r *MemoryShortLinkRepository) FindByShortCode(shortCode string) (model.ShortLink, error) {
 	shortLink, ok := r.shortLinks[shortCode]
 	if !ok {
-		return nil, nil
+		return model.ShortLink{}, nil
 	}
 
 	return shortLink, nil
