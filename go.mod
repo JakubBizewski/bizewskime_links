@@ -2,7 +2,6 @@ module github.com/JakubBizewski/jakubme_links
 
 go 1.21.5
 
-require github.com/google/uuid v1.4.0
 require github.com/gin-gonic/gin v1.9.1
 
 require (

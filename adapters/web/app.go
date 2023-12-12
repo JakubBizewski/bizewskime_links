@@ -14,7 +14,7 @@ type WebApp struct {
 	router           *gin.Engine
 }
 
-func NewWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
+func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
 	router := gin.Default()
 
 	router.GET("/:shortCode", func(c *gin.Context) {

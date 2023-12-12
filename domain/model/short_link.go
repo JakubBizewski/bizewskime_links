@@ -9,7 +9,7 @@ type ShortLink struct {
 	TargetUrl string
 }
 
-func NewRandomShortLink(targetUrl string, shortCodeLen int) ShortLink {
+func CreateRandomShortLink(targetUrl string, shortCodeLen int) ShortLink {
 	return ShortLink{
 		ShortCode: generateRandomShortCode(shortCodeLen),
 		TargetUrl: targetUrl,

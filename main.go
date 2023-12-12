@@ -7,10 +7,10 @@ import (
 )
 
 func main() {
-	shortLinkRepository := shortLinksDb.NewMemoryShortLinkRepository()
-	shortenedLinksService := driver.NewShortLinkService(shortLinkRepository)
+	shortLinkRepository := shortLinksDb.CreateMemoryShortLinkRepository()
+	shortLinksService := driver.CreateShortLinkService(shortLinkRepository)
 
-	webApp := web.NewWebApp(shortenedLinksService)
+	webApp := web.CreateWebApp(shortLinksService)
 
 	err := webApp.Run()
 	if err != nil {

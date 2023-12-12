@@ -16,41 +16,27 @@ type ShortLinkService struct {
 	shortLinkRepository driven.ShortLinkRepository
 }
 
-func NewShortLinkService(shortLinkRepository driven.ShortLinkRepository) *ShortLinkService {
+func CreateShortLinkService(shortLinkRepository driven.ShortLinkRepository) *ShortLinkService {
 	return &ShortLinkService{
 		shortLinkRepository: shortLinkRepository,
 	}
 }
 
 func (s *ShortLinkService) GenerateShortLink(targetUrl string) (string, error) {
-	shortLink, getUniqueShortLinkError := s.getUniqueShortLink(targetUrl)
-	if getUniqueShortLinkError != nil {
-		return "", getUniqueShortLinkError
-	}
+	for i := 0; i < shortCodeGenerationMaxAttempts; i++ {
+		shortLink := model.CreateRandomShortLink(targetUrl, defaultShortCodeLen)
 
-	storeLinkError := s.shortLinkRepository.Store(shortLink)
-	if storeLinkError != nil {
-		return "", storeLinkError
-	}
-
-	return shortLink.ShortCode, nil
-}
-
-func (s *ShortLinkService) getUniqueShortLink(targetUrl string) (*model.ShortLink, error) {
-	for attempt := 0; attempt < shortCodeGenerationMaxAttempts; attempt++ {
-		shortLink := model.NewRandomShortLink(targetUrl, defaultShortCodeLen)
-
-		shortCodeExists, err := s.shortLinkRepository.ShortCodeExists(shortLink.ShortCode)
-		if err != nil {
-			return nil, err
+		err := s.shortLinkRepository.Store(&shortLink)
+		if err == nil {
+			return shortLink.ShortCode, nil
 		}
 
-		if !shortCodeExists {
-			return &shortLink, nil
+		if err != driven.ErrShortCodeAlreadyExists {
+			return "", err
 		}
 	}
 
-	return nil, ErrShortCodeGenerationFailed
+	return "", ErrShortCodeGenerationFailed
 }
 
 func (s *ShortLinkService) GetTargetUrl(shortCode string) (string, error) {

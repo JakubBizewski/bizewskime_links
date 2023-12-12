@@ -1,19 +1,33 @@
 package shortLinksDb
 
-import "github.com/JakubBizewski/jakubme_links/domain/model"
+import (
+	"sync"
+
+	"github.com/JakubBizewski/jakubme_links/domain/model"
+	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
+)
 
 type MemoryShortLinkRepository struct {
 	shortLinks map[string]*model.ShortLink
+	mutex      sync.Mutex
 }
 
-func NewMemoryShortLinkRepository() *MemoryShortLinkRepository {
+func CreateMemoryShortLinkRepository() *MemoryShortLinkRepository {
 	return &MemoryShortLinkRepository{
 		shortLinks: make(map[string]*model.ShortLink),
+		mutex:      sync.Mutex{},
 	}
 }
 
 func (r *MemoryShortLinkRepository) Store(shortLink *model.ShortLink) error {
+	r.mutex.Lock()
+	if _, exists := r.shortLinks[shortLink.ShortCode]; exists {
+		r.mutex.Unlock()
+		return driven.ErrShortCodeAlreadyExists
+	}
+
 	r.shortLinks[shortLink.ShortCode] = shortLink
+	r.mutex.Unlock()
 
 	return nil
 }
@@ -25,10 +39,4 @@ func (r *MemoryShortLinkRepository) FindByShortCode(shortCode string) (*model.Sh
 	}
 
 	return shortLink, nil
-}
-
-func (r *MemoryShortLinkRepository) ShortCodeExists(shortCode string) (bool, error) {
-	_, ok := r.shortLinks[shortCode]
-
-	return ok, nil
 }
