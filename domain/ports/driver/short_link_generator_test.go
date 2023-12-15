@@ -27,9 +27,10 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 		name     string
 		attempts int
 	}{
-		{"UniqueOnFirstTry", 1},
-		{"UniqueOnSecondTry", 2},
-		{"UniqueOnThirdTry", 3},
+		{"StoreUniqueOnFirstTry", 1},
+		{"StoreUniqueOnSecondTry", 2},
+		{"StoreUniqueOnNinethTry", 9},
+		{"StoreUniqueOnTenthTry", 10},
 	}
 
 	for _, testCase := range generateAttemptsTestCases {
@@ -55,8 +56,11 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 		})
 	}
 
-	t.Run("ShortCodeAlreadyExistsError", func(t *testing.T) {
+	t.Run("ErrShortCodeGenerationFailedAfter10StoreFails", func(t *testing.T) {
+		attempts := 0
 		suite.mockRepository.StoreFunc = func(shortLink model.ShortLink) error {
+			attempts++
+
 			return driven.ErrShortCodeAlreadyExists
 		}
 
@@ -64,6 +68,10 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 
 		if shortCode != "" {
 			t.Errorf("Expected short code %s, but got %s", "", shortCode)
+		}
+
+		if attempts != 10 {
+			t.Errorf("Expected 10 attempts, but got %d", attempts)
 		}
 
 		if err != driver.ErrShortCodeGenerationFailed {
