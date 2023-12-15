@@ -37,7 +37,7 @@ func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
 		c.Redirect(302, targetUrl)
 	})
 
-	router.POST("/new", func(c *gin.Context) {
+	router.POST("/", func(c *gin.Context) {
 		var targetUrlPayload targetUrlPayload
 		err := c.BindJSON(&targetUrlPayload)
 		if err != nil {
