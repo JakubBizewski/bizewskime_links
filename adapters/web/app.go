@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
@@ -45,9 +46,16 @@ func CreateWebApp(shortLinkService *driver.ShortLinkService) *App {
 		}
 
 		shortCode, err := shortLinkService.GenerateShortLink(payload.TargetURL)
+		if errors.Is(err, driver.ErrUniqueShortCodeGenerationFailed) {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Failed to generate unique short code",
+			})
+			return
+		}
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
+				"error": "Something went wrong",
 			})
 			return
 		}

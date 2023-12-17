@@ -39,6 +39,7 @@ func makeJSONResponseBody(shortCode string) string {
 	return string(json)
 }
 
+//nolint:gocognit // This is a test suite, so it's ok to have a lot of code here
 func TestWebAppShort(t *testing.T) {
 	shortLinkRepository := &mocks.MockShortLinkRepository{}
 	shortLinkService := driver.CreateShortLinkService(shortLinkRepository)
@@ -167,12 +168,28 @@ func TestWebAppShort(t *testing.T) {
 		shortLinkRepository.StoreFunc = func(shortLink model.ShortLink) error {
 			return driven.ErrShortCodeAlreadyExists
 		}
+		jsonBody := makeJSONRequestBody("https://example.com")
 
-		body := map[string]string{
-			"targetURL": "https://example.com",
+		httpRecorder := httptest.NewRecorder()
+		req, _ := http.NewRequest(http.MethodPost, "/new", bytes.NewBuffer(jsonBody))
+		webApp.Router.ServeHTTP(httpRecorder, req)
+
+		if httpRecorder.Code != 500 {
+			t.Errorf("Expected status code 500, but got %d", httpRecorder.Code)
 		}
 
-		jsonBody, _ := json.Marshal(body)
+		if httpRecorder.Body.String() != expectedErrorBody {
+			t.Errorf("Expected body %s, but got %s", expectedErrorBody, httpRecorder.Body.String())
+		}
+	})
+
+	t.Run("ShouldReturnAmbiguousOnStoreError", func(t *testing.T) {
+		expectedErrorBody := makeExpectedErrorBody("Something went wrong")
+
+		shortLinkRepository.StoreFunc = func(shortLink model.ShortLink) error {
+			return errors.New("Some error")
+		}
+		jsonBody := makeJSONRequestBody("https://example.com")
 
 		httpRecorder := httptest.NewRecorder()
 		req, _ := http.NewRequest(http.MethodPost, "/new", bytes.NewBuffer(jsonBody))

@@ -7,7 +7,7 @@ import (
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
 )
 
-var ErrShortCodeGenerationFailed = errors.New("failed to generate unique short code")
+var ErrUniqueShortCodeGenerationFailed = errors.New("failed to generate unique short code")
 
 const defaultShortCodeLen = 3
 const shortCodeGenerationMaxAttempts = 10
@@ -36,7 +36,7 @@ func (s *ShortLinkService) GenerateShortLink(targetURL string) (string, error) {
 		}
 	}
 
-	return "", ErrShortCodeGenerationFailed
+	return "", ErrUniqueShortCodeGenerationFailed
 }
 
 func (s *ShortLinkService) GetTargetURL(shortCode string) (string, error) {

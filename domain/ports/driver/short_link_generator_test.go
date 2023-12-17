@@ -20,6 +20,7 @@ func (suite *ShortLinkGeneratorTestSuite) SetupTest() {
 	suite.service = driver.CreateShortLinkService(suite.mockRepository)
 }
 
+//nolint:gocognit // This is a test suite, so it's ok to have a lot of code here
 func TestShortLinkGeneratorTestSuite(t *testing.T) {
 	suite := new(ShortLinkGeneratorTestSuite)
 	suite.SetupTest()
@@ -75,8 +76,8 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 			t.Errorf("Expected 10 attempts, but got %d", attempts)
 		}
 
-		if errors.Is(err, driver.ErrShortCodeGenerationFailed) != true {
-			t.Errorf("Expected error %v, but got %v", driver.ErrShortCodeGenerationFailed, err)
+		if errors.Is(err, driver.ErrUniqueShortCodeGenerationFailed) != true {
+			t.Errorf("Expected error %v, but got %v", driver.ErrUniqueShortCodeGenerationFailed, err)
 		}
 	})
 
