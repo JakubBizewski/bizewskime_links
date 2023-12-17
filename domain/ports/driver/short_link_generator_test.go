@@ -7,15 +7,16 @@ import (
 	"github.com/JakubBizewski/jakubme_links/domain/model"
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
+	"github.com/JakubBizewski/jakubme_links/mocks"
 )
 
 type ShortLinkGeneratorTestSuite struct {
-	mockRepository *MockShortLinkRepository
+	mockRepository *mocks.MockShortLinkRepository
 	service        *driver.ShortLinkService
 }
 
 func (suite *ShortLinkGeneratorTestSuite) SetupTest() {
-	suite.mockRepository = &MockShortLinkRepository{}
+	suite.mockRepository = &mocks.MockShortLinkRepository{}
 	suite.service = driver.CreateShortLinkService(suite.mockRepository)
 }
 
@@ -102,16 +103,4 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 			t.Errorf("Expected 1 call to store, but got %d", storeCalls)
 		}
 	})
-}
-
-type MockShortLinkRepository struct {
-	StoreFunc func(shortLink model.ShortLink) error
-}
-
-func (m *MockShortLinkRepository) Store(shortLink model.ShortLink) error {
-	return m.StoreFunc(shortLink)
-}
-
-func (m *MockShortLinkRepository) FindByShortCode(shortCode string) (model.ShortLink, error) {
-	return model.ShortLink{}, nil
 }

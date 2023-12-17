@@ -1,4 +1,4 @@
-package shortLinksDb
+package memory
 
 import (
 	"sync"

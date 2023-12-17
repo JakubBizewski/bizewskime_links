@@ -11,7 +11,7 @@ type targetUrlPayload struct {
 
 type WebApp struct {
 	shortLinkService *driver.ShortLinkService
-	router           *gin.Engine
+	Router           *gin.Engine
 }
 
 func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
@@ -21,23 +21,19 @@ func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
 		shortCode := c.Param("shortCode")
 		targetUrl, err := shortLinkService.GetTargetUrl(shortCode)
 		if err != nil {
-			c.JSON(500, gin.H{
-				"error": err.Error(),
-			})
+			c.String(500, "Something went wrong")
 			return
 		}
 
 		if targetUrl == "" {
-			c.JSON(404, gin.H{
-				"error": "Not found",
-			})
+			c.Redirect(302, "/")
 			return
 		}
 
 		c.Redirect(302, targetUrl)
 	})
 
-	router.POST("/", func(c *gin.Context) {
+	router.POST("/new", func(c *gin.Context) {
 		var targetUrlPayload targetUrlPayload
 		err := c.BindJSON(&targetUrlPayload)
 		if err != nil {
@@ -61,10 +57,10 @@ func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
 	})
 
 	return &WebApp{
-		router: router,
+		Router: router,
 	}
 }
 
 func (webApp *WebApp) Run() error {
-	return webApp.router.Run()
+	return webApp.Router.Run()
 }
