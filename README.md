@@ -12,8 +12,9 @@ It is hosted on [l.bizewski.me](https://l.bizewski.me).
 - If generated short code already exists, it will generate a new one. It will try 10 times before giving up.
 
 ## TODO:
-* [ ] Implement a database repository. Right now, it is using a memory repository.
-* [ ] Implement history of short links.
+* [ ] Implement a database repository. Right now, it is using a memory repository,
+* [ ] Implement history of short links,
+* [ ] Add rate limiting to prevent DoS attacks and brute-forcing.
 
 ## Endpoints
 
