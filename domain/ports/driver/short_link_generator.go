@@ -7,7 +7,7 @@ import (
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
 )
 
-var ErrShortCodeGenerationFailed = errors.New("Failed to generate unique short code")
+var ErrShortCodeGenerationFailed = errors.New("failed to generate unique short code")
 
 const defaultShortCodeLen = 3
 const shortCodeGenerationMaxAttempts = 10
@@ -22,16 +22,16 @@ func CreateShortLinkService(shortLinkRepository driven.ShortLinkRepository) *Sho
 	}
 }
 
-func (s *ShortLinkService) GenerateShortLink(targetUrl string) (string, error) {
+func (s *ShortLinkService) GenerateShortLink(targetURL string) (string, error) {
 	for i := 0; i < shortCodeGenerationMaxAttempts; i++ {
-		shortLink := model.CreateRandomShortLink(targetUrl, defaultShortCodeLen)
+		shortLink := model.CreateRandomShortLink(targetURL, defaultShortCodeLen)
 
 		err := s.shortLinkRepository.Store(shortLink)
 		if err == nil {
 			return shortLink.ShortCode, nil
 		}
 
-		if err != driven.ErrShortCodeAlreadyExists {
+		if !errors.Is(err, driven.ErrShortCodeAlreadyExists) {
 			return "", err
 		}
 	}
@@ -39,11 +39,11 @@ func (s *ShortLinkService) GenerateShortLink(targetUrl string) (string, error) {
 	return "", ErrShortCodeGenerationFailed
 }
 
-func (s *ShortLinkService) GetTargetUrl(shortCode string) (string, error) {
+func (s *ShortLinkService) GetTargetURL(shortCode string) (string, error) {
 	shortLink, err := s.shortLinkRepository.FindByShortCode(shortCode)
 	if err != nil {
 		return "", err
 	}
 
-	return shortLink.TargetUrl, nil
+	return shortLink.TargetURL, nil
 }

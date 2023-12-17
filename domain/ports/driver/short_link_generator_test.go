@@ -75,7 +75,7 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 			t.Errorf("Expected 10 attempts, but got %d", attempts)
 		}
 
-		if err != driver.ErrShortCodeGenerationFailed {
+		if errors.Is(err, driver.ErrShortCodeGenerationFailed) != true {
 			t.Errorf("Expected error %v, but got %v", driver.ErrShortCodeGenerationFailed, err)
 		}
 	})
@@ -95,7 +95,7 @@ func TestShortLinkGeneratorTestSuite(t *testing.T) {
 			t.Errorf("Expected short code %s, but got %s", "", shortCode)
 		}
 
-		if err != expectedError {
+		if errors.Is(err, expectedError) != true {
 			t.Errorf("Expected error %v, but got %v", expectedError, err)
 		}
 

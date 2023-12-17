@@ -6,16 +6,17 @@ const randomCodeCharset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0
 
 type ShortLink struct {
 	ShortCode string
-	TargetUrl string
+	TargetURL string
 }
 
-func CreateRandomShortLink(targetUrl string, shortCodeLen int) ShortLink {
+func CreateRandomShortLink(targetURL string, shortCodeLen int) ShortLink {
 	return ShortLink{
 		ShortCode: generateRandomShortCode(shortCodeLen),
-		TargetUrl: targetUrl,
+		TargetURL: targetURL,
 	}
 }
 
+//nolint:gosec // we don't need cryptographically secure random numbers here
 func generateRandomShortCode(shortCodeLen int) string {
 	randomCode := make([]byte, shortCodeLen)
 	for i := range randomCode {

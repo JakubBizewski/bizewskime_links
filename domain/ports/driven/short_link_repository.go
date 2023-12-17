@@ -6,7 +6,7 @@ import (
 	"github.com/JakubBizewski/jakubme_links/domain/model"
 )
 
-var ErrShortCodeAlreadyExists = errors.New("Short code already exists")
+var ErrShortCodeAlreadyExists = errors.New("short code already exists")
 
 type ShortLinkRepository interface {
 	Store(shortLink model.ShortLink) error

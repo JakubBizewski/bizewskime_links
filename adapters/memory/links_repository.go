@@ -7,19 +7,19 @@ import (
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
 )
 
-type MemoryShortLinkRepository struct {
+type ShortLinkRepository struct {
 	shortLinks map[string]model.ShortLink
 	mutex      sync.Mutex
 }
 
-func CreateMemoryShortLinkRepository() *MemoryShortLinkRepository {
-	return &MemoryShortLinkRepository{
+func CreateMemoryShortLinkRepository() *ShortLinkRepository {
+	return &ShortLinkRepository{
 		shortLinks: make(map[string]model.ShortLink),
 		mutex:      sync.Mutex{},
 	}
 }
 
-func (r *MemoryShortLinkRepository) Store(shortLink model.ShortLink) error {
+func (r *ShortLinkRepository) Store(shortLink model.ShortLink) error {
 	r.mutex.Lock()
 	if _, exists := r.shortLinks[shortLink.ShortCode]; exists {
 		r.mutex.Unlock()
@@ -32,7 +32,7 @@ func (r *MemoryShortLinkRepository) Store(shortLink model.ShortLink) error {
 	return nil
 }
 
-func (r *MemoryShortLinkRepository) FindByShortCode(shortCode string) (model.ShortLink, error) {
+func (r *ShortLinkRepository) FindByShortCode(shortCode string) (model.ShortLink, error) {
 	shortLink, ok := r.shortLinks[shortCode]
 	if !ok {
 		return model.ShortLink{}, nil

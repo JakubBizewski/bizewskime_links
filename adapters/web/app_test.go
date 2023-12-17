@@ -23,15 +23,15 @@ func makeExpectedErrorBody(errorMessage string) string {
 	return string(json)
 }
 
-func makeJsonRequestBody(targetUrl string) []byte {
+func makeJSONRequestBody(targetURL string) []byte {
 	json, _ := json.Marshal(map[string]string{
-		"targetUrl": targetUrl,
+		"targetURL": targetURL,
 	})
 
 	return json
 }
 
-func makeJsonResponseBody(shortCode string) string {
+func makeJSONResponseBody(shortCode string) string {
 	json, _ := json.Marshal(map[string]string{
 		"shortCode": shortCode,
 	})
@@ -47,7 +47,7 @@ func TestWebAppShort(t *testing.T) {
 	t.Run("RedirectForExistigShortLink", func(t *testing.T) {
 		url := "/testShortCode"
 		expectedShortCode := "testShortCode"
-		expectedTargetUrl := "https://example.com"
+		expectedTargetURL := "https://example.com"
 
 		shortLinkRepository.FindByShortCodeFunc = func(shortCode string) (model.ShortLink, error) {
 			if shortCode != expectedShortCode {
@@ -56,20 +56,20 @@ func TestWebAppShort(t *testing.T) {
 
 			return model.ShortLink{
 				ShortCode: shortCode,
-				TargetUrl: expectedTargetUrl,
+				TargetURL: expectedTargetURL,
 			}, nil
 		}
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", url, nil)
+		req, _ := http.NewRequest(http.MethodGet, url, nil)
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 302 {
 			t.Errorf("Expected status code 302, but got %d", httpRecorder.Code)
 		}
 
-		if httpRecorder.Header().Get("Location") != expectedTargetUrl {
-			t.Errorf("Expected redirect to %s, but got %s", expectedTargetUrl, httpRecorder.Header().Get("Location"))
+		if httpRecorder.Header().Get("Location") != expectedTargetURL {
+			t.Errorf("Expected redirect to %s, but got %s", expectedTargetURL, httpRecorder.Header().Get("Location"))
 		}
 	})
 
@@ -79,7 +79,7 @@ func TestWebAppShort(t *testing.T) {
 		}
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/notFoundShortCode", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/notFoundShortCode", nil)
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 302 {
@@ -99,7 +99,7 @@ func TestWebAppShort(t *testing.T) {
 		}
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/dummyErrorShortCode", nil)
+		req, _ := http.NewRequest(http.MethodGet, "/dummyErrorShortCode", nil)
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 500 {
@@ -112,12 +112,12 @@ func TestWebAppShort(t *testing.T) {
 	})
 
 	t.Run("ShouldGenerateShortLink", func(t *testing.T) {
-		expectedTargetUrl := "https://example.com"
+		expectedTargetURL := "https://example.com"
 		var generatedShortCode string
 
 		shortLinkRepository.StoreFunc = func(shortLink model.ShortLink) error {
-			if shortLink.TargetUrl != expectedTargetUrl {
-				t.Errorf("Expected target url %s, but got %s", expectedTargetUrl, shortLink.TargetUrl)
+			if shortLink.TargetURL != expectedTargetURL {
+				t.Errorf("Expected target url %s, but got %s", expectedTargetURL, shortLink.TargetURL)
 			}
 
 			generatedShortCode = shortLink.ShortCode
@@ -125,37 +125,31 @@ func TestWebAppShort(t *testing.T) {
 			return nil
 		}
 
-		body := map[string]string{
-			"targetUrl": expectedTargetUrl,
-		}
-
-		jsonBody, _ := json.Marshal(body)
+		jsonBody := makeJSONRequestBody(expectedTargetURL)
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/new", bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPost, "/new", bytes.NewBuffer(jsonBody))
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 200 {
 			t.Errorf("Expected status code 200, but got %d", httpRecorder.Code)
 		}
 
-		expectedResponse := makeJsonResponseBody(generatedShortCode)
+		expectedResponse := makeJSONResponseBody(generatedShortCode)
 		if httpRecorder.Body.String() != expectedResponse {
 			t.Errorf("Expected body %s, but got %s", expectedResponse, httpRecorder.Body.String())
 		}
 	})
 
-	t.Run("ShouldReturnErrorOnInvalidUrl", func(t *testing.T) {
-		expectedErrorBody := makeExpectedErrorBody("Key: 'targetUrlPayload.TargetUrl' Error:Field validation for 'TargetUrl' failed on the 'url' tag")
+	t.Run("ShouldReturnErrorOnInvalidURL", func(t *testing.T) {
+		expectedErrorBody := makeExpectedErrorBody(
+			"Key: 'targetURLPayload.TargetURL' Error:Field validation for 'TargetURL' failed on the 'url' tag",
+		)
 
-		body := map[string]string{
-			"targetUrl": "invalidUrl",
-		}
-
-		jsonBody, _ := json.Marshal(body)
+		jsonBody := makeJSONRequestBody("invalidURL")
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/new", bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPost, "/new", bytes.NewBuffer(jsonBody))
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 400 {
@@ -175,13 +169,13 @@ func TestWebAppShort(t *testing.T) {
 		}
 
 		body := map[string]string{
-			"targetUrl": "https://example.com",
+			"targetURL": "https://example.com",
 		}
 
 		jsonBody, _ := json.Marshal(body)
 
 		httpRecorder := httptest.NewRecorder()
-		req, _ := http.NewRequest("POST", "/new", bytes.NewBuffer(jsonBody))
+		req, _ := http.NewRequest(http.MethodPost, "/new", bytes.NewBuffer(jsonBody))
 		webApp.Router.ServeHTTP(httpRecorder, req)
 
 		if httpRecorder.Code != 500 {

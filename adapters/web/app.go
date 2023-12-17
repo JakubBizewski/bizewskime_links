@@ -1,66 +1,67 @@
 package web
 
 import (
+	"net/http"
+
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
 	"github.com/gin-gonic/gin"
 )
 
-type targetUrlPayload struct {
-	TargetUrl string `json:"targetUrl" binding:"required,url"`
+type targetURLPayload struct {
+	TargetURL string `json:"targetURL" binding:"required,url"`
 }
 
-type WebApp struct {
-	shortLinkService *driver.ShortLinkService
-	Router           *gin.Engine
+type App struct {
+	Router *gin.Engine
 }
 
-func CreateWebApp(shortLinkService *driver.ShortLinkService) *WebApp {
+func CreateWebApp(shortLinkService *driver.ShortLinkService) *App {
 	router := gin.Default()
 
 	router.GET("/:shortCode", func(c *gin.Context) {
 		shortCode := c.Param("shortCode")
-		targetUrl, err := shortLinkService.GetTargetUrl(shortCode)
+		targetURL, err := shortLinkService.GetTargetURL(shortCode)
 		if err != nil {
-			c.String(500, "Something went wrong")
+			c.String(http.StatusInternalServerError, "Something went wrong")
 			return
 		}
 
-		if targetUrl == "" {
-			c.Redirect(302, "/")
+		if targetURL == "" {
+			c.Redirect(http.StatusFound, "/")
 			return
 		}
 
-		c.Redirect(302, targetUrl)
+		c.Redirect(http.StatusFound, targetURL)
 	})
 
 	router.POST("/new", func(c *gin.Context) {
-		var targetUrlPayload targetUrlPayload
-		err := c.BindJSON(&targetUrlPayload)
+		var payload targetURLPayload
+		err := c.BindJSON(&payload)
 		if err != nil {
-			c.JSON(400, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		shortCode, err := shortLinkService.GenerateShortLink(targetUrlPayload.TargetUrl)
+		shortCode, err := shortLinkService.GenerateShortLink(payload.TargetURL)
 		if err != nil {
-			c.JSON(500, gin.H{
+			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
 			})
 			return
 		}
 
-		c.JSON(200, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"shortCode": shortCode,
 		})
 	})
 
-	return &WebApp{
+	return &App{
 		Router: router,
 	}
 }
 
-func (webApp *WebApp) Run() error {
+func (webApp *App) Run() error {
 	return webApp.Router.Run()
 }
