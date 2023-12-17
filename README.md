@@ -3,7 +3,8 @@
 This is a short link generator written in Go.  
 It provides an API endpoint for creating new short links and an endpoint to use the shot link.
 
-This project is a learning exercise for me. This is my first Go application.
+This project is a learning exercise for me. This is my first Go application.  
+It is hosted on [l.bizewski.me](https://l.bizewski.me).
 
 ## Technical and business considerations
 - This application is build using the hexagonal architecture. I know it is a bit overkill for this application, but I wanted to learn more about it.
