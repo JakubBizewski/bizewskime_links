@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"os"
+	"sync"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -58,6 +59,7 @@ func getShortLink(shortCode string) (model.ShortLink, error) {
 	return shortLink, nil
 }
 
+//nolint:gocognit // This is a test suite, so it's ok to have a lot of code here
 func TestSqliteShortLinkRepository(t *testing.T) {
 	dbSetupErr := sqlite.Setup(dbPath)
 	if dbSetupErr != nil {
@@ -102,6 +104,65 @@ func TestSqliteShortLinkRepository(t *testing.T) {
 		err := repository.Store(existingShortLink)
 		if !errors.Is(err, driven.ErrShortCodeAlreadyExists) {
 			t.Errorf("Expected error %s, but got %s", driven.ErrShortCodeAlreadyExists, err)
+		}
+	})
+
+	t.Run("ShouldNotBreakOnConcurrentStore", func(t *testing.T) {
+		waitGroup := sync.WaitGroup{}
+		waitGroup.Add(2)
+
+		storeShortLink := func(shortCode string) {
+			shortLink := model.ShortLink{
+				ShortCode: shortCode,
+				TargetURL: "https://example.com",
+			}
+
+			err := repository.Store(shortLink)
+			if err != nil {
+				t.Errorf("Expected no error, but got %s", err)
+			}
+
+			waitGroup.Done()
+		}
+
+		go storeShortLink("concurrentShortCode1")
+		go storeShortLink("concurrentShortCode2")
+
+		waitGroup.Wait()
+	})
+
+	t.Run("ShouldReturnOnlyOneErrShortCodeAlreadyExistsOnConcurrentStore", func(t *testing.T) {
+		errorCount := 0
+
+		waitGroup := sync.WaitGroup{}
+		waitGroup.Add(2)
+
+		shortLink := model.ShortLink{
+			ShortCode: "concurrentShortCode",
+			TargetURL: "https://example.com",
+		}
+
+		storeShortLink := func() {
+			err := repository.Store(shortLink)
+			if err != nil {
+				if !errors.Is(err, driven.ErrShortCodeAlreadyExists) {
+					t.Errorf("Expected error %s, but got %s", driven.ErrShortCodeAlreadyExists, err)
+					return
+				}
+
+				errorCount++
+			}
+
+			waitGroup.Done()
+		}
+
+		go storeShortLink()
+		go storeShortLink()
+
+		waitGroup.Wait()
+
+		if errorCount != 1 {
+			t.Errorf("Expected 1 error, but got %d", errorCount)
 		}
 	})
 
