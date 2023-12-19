@@ -6,7 +6,11 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "main.go"
+            "program": "main.go",
+            "env": {
+                "DB_PATH": "${workspaceFolder}/storage/links.db",
+                "CGO_ENABLED": "1",
+            }
         }
     ]
 }

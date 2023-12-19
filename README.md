@@ -10,11 +10,17 @@ It is hosted on [l.bizewski.me](https://l.bizewski.me).
 - This application is build using the hexagonal architecture. I know it is a bit overkill for this application, but I wanted to learn more about it.
 - Short codes are built using 3 random characters.
 - If generated short code already exists, it will generate a new one. It will try 10 times before giving up.
+- The application uses SQLite as a database. There is no need for a full-blown database for this application.
 
 ## TODO:
-* [ ] Implement a database repository. Right now, it is using a memory repository,
+* [x] Implement a database repository. Right now, it is using a memory repository,
 * [ ] Implement history of short links,
 * [ ] Add rate limiting to prevent DoS attacks and brute-forcing.
+
+## Deployment
+```sh
+docker run -d --restart unless-stopped --name links -p 8080:8080 -v /var/links:/app-storage ghcr.io/jakubbizewski/jakubme_links:master
+```
 
 ## Endpoints
 
