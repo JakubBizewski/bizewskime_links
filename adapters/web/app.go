@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/JakubBizewski/jakubme_links/adapters/web/middleware"
+	"github.com/JakubBizewski/jakubme_links/domain/ports/driven"
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +18,7 @@ type App struct {
 	Router *gin.Engine
 }
 
-func CreateWebApp(shortLinkService *driver.ShortLinkService) *App {
+func CreateWebApp(shortLinkService *driver.ShortLinkService, encryptionService driven.EncryptionService) *App {
 	router := gin.Default()
 
 	router.GET("/:shortCode", func(c *gin.Context) {
@@ -35,7 +37,7 @@ func CreateWebApp(shortLinkService *driver.ShortLinkService) *App {
 		c.Redirect(http.StatusFound, targetURL)
 	})
 
-	router.POST("/new", func(c *gin.Context) {
+	router.POST("/new", middleware.UserID(encryptionService), func(c *gin.Context) {
 		var payload targetURLPayload
 		err := c.BindJSON(&payload)
 		if err != nil {

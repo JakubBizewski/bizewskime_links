@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/JakubBizewski/jakubme_links/adapters/web"
@@ -39,11 +40,19 @@ func makeJSONResponseBody(shortCode string) string {
 	return string(json)
 }
 
+func hasUserIDCookie(recorder *httptest.ResponseRecorder) bool {
+	setCookieValue := recorder.Header().Get("Set-Cookie")
+
+	return strings.Contains(setCookieValue, "user_id=")
+}
+
 //nolint:gocognit // This is a test suite, so it's ok to have a lot of code here
 func TestWebAppShort(t *testing.T) {
+	encryptionService := &mocks.MockEncryptionService{}
 	shortLinkRepository := &mocks.MockShortLinkRepository{}
 	shortLinkService := driver.CreateShortLinkService(shortLinkRepository)
-	webApp := web.CreateWebApp(shortLinkService)
+
+	webApp := web.CreateWebApp(shortLinkService, encryptionService)
 
 	t.Run("RedirectForExistigShortLink", func(t *testing.T) {
 		url := "/testShortCode"
@@ -72,6 +81,10 @@ func TestWebAppShort(t *testing.T) {
 		if httpRecorder.Header().Get("Location") != expectedTargetURL {
 			t.Errorf("Expected redirect to %s, but got %s", expectedTargetURL, httpRecorder.Header().Get("Location"))
 		}
+
+		if httpRecorder.Header().Get("Set-Cookie") != "" {
+			t.Errorf("Expected no cookie to be set, but got %s", httpRecorder.Header().Get("Set-Cookie"))
+		}
 	})
 
 	t.Run("ShouldRedirectHomeOnShortLinkNotFound", func(t *testing.T) {
@@ -89,6 +102,10 @@ func TestWebAppShort(t *testing.T) {
 
 		if httpRecorder.Header().Get("Location") != "/" {
 			t.Errorf("Expected redirect to %s, but got %s", "/", httpRecorder.Header().Get("Location"))
+		}
+
+		if httpRecorder.Header().Get("Set-Cookie") != "" {
+			t.Errorf("Expected no cookie to be set, but got %s", httpRecorder.Header().Get("Set-Cookie"))
 		}
 	})
 
@@ -109,6 +126,10 @@ func TestWebAppShort(t *testing.T) {
 
 		if httpRecorder.Body.String() != expectedErrorMessage {
 			t.Errorf("Expected body %s, but got %s", expectedErrorMessage, httpRecorder.Body.String())
+		}
+
+		if httpRecorder.Header().Get("Set-Cookie") != "" {
+			t.Errorf("Expected no cookie to be set, but got %s", httpRecorder.Header().Get("Set-Cookie"))
 		}
 	})
 
@@ -139,6 +160,10 @@ func TestWebAppShort(t *testing.T) {
 		expectedResponse := makeJSONResponseBody(generatedShortCode)
 		if httpRecorder.Body.String() != expectedResponse {
 			t.Errorf("Expected body %s, but got %s", expectedResponse, httpRecorder.Body.String())
+		}
+
+		if !hasUserIDCookie(httpRecorder) {
+			t.Errorf("Expected to set cookie, but got %s", httpRecorder.Header().Get("Set-Cookie"))
 		}
 	})
 

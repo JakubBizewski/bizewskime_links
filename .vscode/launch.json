@@ -9,6 +9,7 @@
             "program": "main.go",
             "env": {
                 "DB_PATH": "${workspaceFolder}/storage/links.db",
+                "ENCRYPTION_KEY": "GyriMEttGmRFNDoWB7Rimdf25TMpnVSj",
                 "CGO_ENABLED": "1",
             }
         }

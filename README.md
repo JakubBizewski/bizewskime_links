@@ -19,7 +19,7 @@ It is hosted on [l.bizewski.me](https://l.bizewski.me).
 
 ## Deployment
 ```sh
-docker run -d --restart unless-stopped --name links -p 8080:8080 -v /var/links:/app-storage ghcr.io/jakubbizewski/jakubme_links:master
+docker run -d --restart unless-stopped --name links -p 8080:8080 -v /var/links:/app-storage -e ENCRYPTION_KEY=[your 32byte key] ghcr.io/jakubbizewski/jakubme_links:master
 ```
 
 ## Endpoints

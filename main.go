@@ -5,6 +5,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 
+	"github.com/JakubBizewski/jakubme_links/adapters/encryption"
 	"github.com/JakubBizewski/jakubme_links/adapters/sqlite"
 	"github.com/JakubBizewski/jakubme_links/adapters/web"
 	"github.com/JakubBizewski/jakubme_links/domain/ports/driver"
@@ -18,10 +19,11 @@ func main() {
 		panic(dbSetupErr)
 	}
 
+	encryptionService := encryption.CreateAESEncryptionService(os.Getenv("ENCRYPTION_KEY"))
 	shortLinkRepository := sqlite.CreateShortLinkRepository(dbPath)
 	shortLinksService := driver.CreateShortLinkService(shortLinkRepository)
 
-	webApp := web.CreateWebApp(shortLinksService)
+	webApp := web.CreateWebApp(shortLinksService, encryptionService)
 
 	webErr := webApp.Run()
 	if webErr != nil {
