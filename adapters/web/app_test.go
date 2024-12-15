@@ -43,7 +43,7 @@ func makeJSONResponseBody(shortCode string) string {
 func hasUserIDCookie(recorder *httptest.ResponseRecorder) bool {
 	setCookieValue := recorder.Header().Get("Set-Cookie")
 
-	return strings.Contains(setCookieValue, "user_id=")
+	return strings.Contains(setCookieValue, "user-id=")
 }
 
 //nolint:gocognit // This is a test suite, so it's ok to have a lot of code here
